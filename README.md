@@ -1,23 +1,20 @@
-<div align=center>
-<h2>Advanced-BJUT-Online</h2>
-<b>更好的北京工业大学教务 / 门户使用体验</b>
-<br/>
-<br/>
-<i>包括...</i>
+<div align="center">
+   <h2>Advanced-BJUT-Online</h2>
+   <b>更好的北京工业大学教务 / 门户使用体验</b>
+   <br />
+   <br />
+   <i><b>包括...</b></i>
 </div>
-
-
-![alt text](assets/main_function.svg)
-
-<div align=center>
-<i>以及</i>
-<p>
-隐藏教务系统首页照片<br/>
-优化门户网站左下角工具区域排列顺序<br/>
-隐藏教务系统顶部 Tips 提示条<br/>
-教务系统个人信息页表格可拖拽调整高度<br/>
-WebVPN 会话 Cookies 持久化 <sup>Tampermonkey BETA 有效</sup>
-</p>
+<p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: 32em" /></p>
+<div align="center">
+   <i><b>以及</b></i><br/>
+   <small>
+      隐藏教务系统首页照片<br />
+      优化门户网站左下角工具区域排列顺序<br />
+      隐藏教务系统顶部 Tips 提示条<br />
+      教务系统个人信息页表格可拖拽调整高度<br />
+      WebVPN 会话 Cookies 持久化 <sup>Tampermonkey BETA 有效</sup>
+   </small>
 </div>
 
 ### 安装
