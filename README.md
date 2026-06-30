@@ -5,7 +5,7 @@
    <br />
    <i><b>包括...</b></i>
 </div>
-<p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: 32em" /></p>
+<p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(32em, 100%)" /></p>
 <div align="center">
    <i><b>以及</b></i><br/>
    <small>
@@ -13,7 +13,7 @@
       优化门户网站左下角工具区域排列顺序<br />
       隐藏教务系统顶部 Tips 提示条<br />
       教务系统个人信息页表格可拖拽调整高度<br />
-      WebVPN 会话 Cookies 持久化 <sup>Tampermonkey BETA 有效</sup>
+      WebVPN 会话 Cookies 持久化 <small>Tampermonkey BETA 有效</small>
    </small>
 </div>
 
@@ -30,6 +30,6 @@
 
 ### 声明
 
-若该工具违反了学校相关规定，请您通过 Issues 等方式联系我。我会在收到通知的第一时间，即刻下架相关工具或删除相关内容。
+若该工具违反了学校相关规定，请您通过 Issues 等方式联系我。我会在收到通知的第一时间=下架相关工具或删除相关内容。
 
 本项目为作者个人利用业余时间开发的技术交流与分享项目。本项目非学校官方授权、非官方组织开发，其所有代码及功能均不代表学校的任何官方立场。

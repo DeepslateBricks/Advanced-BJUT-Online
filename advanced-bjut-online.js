@@ -83,7 +83,7 @@
             if (onObserve) return;
             onObserve = true;
             $("#observeNew")?.setAttribute("disabled");
-            $("title") && ($("title").innerText = "🤔 学生成绩查询");
+            $("title") && ($("title").innerText = "🤖 学生成绩查询");
             let worker = null;
             try {
                 worker = new Worker(
@@ -189,12 +189,42 @@
 
             localStorage.setItem('betterBJUTOnline_score_history', JSON.stringify(history));
 
-            let itemsHtml = history.map(h => `
-        <li class="score-history-item">
-            <span class="score-history-date">${h[0]}</span>
-            <span class="score-history-value">${h[1]}</span>
-        </li>
-    `).join('');
+            const groupHistory = (history) => {
+                if (!history.length) return [];
+                const sorted = [...history].sort((a, b) => new Date(a[0]) - new Date(b[0]));
+                const groups = [];
+                let i = sorted.length - 1;
+                while (i >= 0) {
+                    const root = sorted[i];
+                    const group = [root];
+                    const rootDate = new Date(root[0]);
+                    let j = i - 1;
+                    while (j >= 0) {
+                        if ((rootDate - new Date(sorted[j][0])) / (1000 * 60 * 60 * 24) <= 14) {
+                            group.unshift(sorted[j]);
+                            j--;
+                        } else break;
+                    }
+                    groups.unshift(group);
+                    i = j;
+                }
+                return groups;
+            };
+
+            const groups = groupHistory(history);
+            let itemsHtml = groups.map(group => {
+                const hasSubEntries = group.length > 1;
+                return `
+        <li class="score-history-item${hasSubEntries ? ' score-history-group' : ''}">
+            ${group.map((h, idx) => {
+                const isRoot = idx === group.length - 1;
+                return `<div class="score-history-entry${isRoot ? ' root-entry' : ' sub-entry'}">
+                    <span class="score-history-date">${isRoot ? (hasSubEntries ? '> ' : '- ') : '&nbsp;'} ${h[0]}</span>
+                    <span class="score-history-value">${h[1]}</span>
+                </div>`;
+            }).join('')}
+        </li>`;
+            }).join('');
 
             $('form#form')?.insertAdjacentHTML('afterend', `
         <div class="score-history-card">
@@ -204,6 +234,11 @@
             </ul>
         </div>
     `);
+
+            $('.score-history-list')?.addEventListener('click', (e) => {
+                const li = e.target.closest('.score-history-group');
+                if (li) li.classList.toggle('expanded');
+            });
 
             let data = {
                 name: "-",
@@ -313,9 +348,14 @@
 .score-history-title { font-size: 15px; font-weight: 600; color: #323130; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 .score-history-title::before { content: ""; display: inline-block; width: 3px; height: 14px; background-color: #0078d4; border-radius: 2px; }
 .score-history-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; max-height: 25em; }
-.score-history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 4px; transition: background-color 0.15s ease; }
+.score-history-item { display: flex; flex-direction: column; padding: 0; border-radius: 4px; transition: background-color 0.15s ease; }
 .score-history-item:hover { background-color: #f3f2f1; }
-.score-history-date { color: #605e5c; font-size: 13px; }
+.score-history-entry { display: flex; justify-content: space-between; align-items: center; }
+.score-history-entry.root-entry { padding: 10px 12px; }
+.score-history-entry.sub-entry { display: none; padding: 10px 12px; opacity: 0.5; font-size: 0.9em; }
+.score-history-group { cursor: pointer; }
+.score-history-group.expanded .score-history-entry.sub-entry { display: flex; }
+.score-history-date { color: #605e5c; font-size: 13px; font-family: 'JetBrains Mono', ui-monospace; }
 .score-history-value { color: #201f1e; font-weight: 600; font-size: 14px; }
 .fluent-btn-main { background: #0f6cbd; color: #ffffff; border: none; padding: 10px 24px; font-size: 14px; font-weight: 600; border-radius: 4px; cursor: pointer; transition: background-color 0.1s ease, box-shadow 0.1s ease; margin: 16px auto 24px auto; display: block; width: 100%; max-width: 500px; text-align: center; font-family: inherit; }
 .fluent-btn-main:hover { background: #115ea3; }
