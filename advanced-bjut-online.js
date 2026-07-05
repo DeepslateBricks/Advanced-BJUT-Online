@@ -5,8 +5,10 @@
 // @match        https://jwglxt.bjut.edu.cn/*
 // @grant        GM_notification
 // @grant        GM_cookie
+// @grant        GM_getValue
+// @grant        GM_setValue
 // @icon         http://cdn.urongda.com/images/normal/medium/beijing-university-of-technology-logo-1024px.png
-// @version      0.1.0
+// @version      0.1.1
 // @updateURL    https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // @downloadURL  https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // ==/UserScript==
@@ -38,7 +40,7 @@
     const $ = (s) => document.querySelector(s);
     const $$ = (s) => document.querySelectorAll(s);
 
-    const action = (mode, condition, action, timeoutMs = 15000) => {
+    const action = (mode, condition, action, timeoutMs = 30000) => {
         const startTime = Date.now();
         let interval = setInterval(() => {
             if (Date.now() - startTime > timeoutMs) {
@@ -119,6 +121,7 @@
                                     text: "我们发现了一个成绩更新！",
                                     title: "成绩更新",
                                 });
+                                showScoreUpdateToast();
                             }
                         }, 1000);
                     },
@@ -137,11 +140,61 @@
         });
     }
 
+    putStyles(`
+.score-update-toast { position: fixed; bottom: 24px; right: 24px; z-index: 999999; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 4px rgba(0, 0, 0, 0.08); padding: 16px 20px; max-width: 320px; font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; transform: translateX(calc(100% + 40px)); opacity: 0; transition: transform 0.35s cubic-bezier(0,0,0,1), opacity 0.25s ease; cursor: pointer; will-change: transform; }
+.score-update-toast.visible { transform: translateX(0); opacity: 1; }
+.score-update-toast-title { font-size: 14px; font-weight: 600; color: #323130; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.score-update-toast-title::before { content: ""; display: inline-block; width: 3px; height: 14px; background-color: #0078d4; border-radius: 2px; }
+.score-update-toast-message { font-size: 13px; color: #605e5c; line-height: 1.4; }
+`);
+
+    function showScoreUpdateToast() {
+        const existing = document.querySelector('.score-update-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = 'score-update-toast';
+        toast.innerHTML = `
+            <div class="score-update-toast-title">成绩更新</div>
+            <div class="score-update-toast-message">我们检测到了一个成绩更新</div>
+        `;
+        document.body.append(toast);
+
+        let hideTimer = null;
+        let removeTimer = null;
+
+        const cancelAutoHide = () => {
+            if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+            if (removeTimer) { clearTimeout(removeTimer); removeTimer = null; }
+        };
+
+        const hide = () => {
+            cancelAutoHide();
+            toast.classList.remove('visible');
+            toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+        };
+
+        const onShow = () => {
+            document.removeEventListener('visibilitychange', onShow);
+            hideTimer = setTimeout(hide, 3000);
+        };
+
+        toast.addEventListener('click', hide);
+
+        requestAnimationFrame(() => toast.classList.add('visible'));
+
+        if (document.visibilityState === 'visible') {
+            hideTimer = setTimeout(hide, 2000);
+        } else {
+            document.addEventListener('visibilitychange', onShow);
+        }
+    }
+
     try {
         GM_cookie.list({ name: "wengine_vpn_ticketwebvpn_bjut_edu_cn" }, (cookies, error) => {
+            if (error) { console.warn('GM_cookie.list 失败', error); return; }
             if (!cookies?.length) return;
             const cookie = cookies[0];
-            console.log(cookie);
             GM_cookie.delete(cookie);
             GM_cookie.set({
                 name: cookie.name,
@@ -154,10 +207,13 @@
                 url: location.href
             });
         });
-    } catch (err) {}
+    } catch (err) { console.warn('Cookie 持久化失败', err); }
 
     if (!location.pathname.includes('xtgl')) {
-        document.querySelectorAll('#topButton.navbar-brand')?.forEach((el) => { el.setAttribute('onclick', "location.href = '..'"); });
+        document.querySelectorAll('#topButton.navbar-brand')?.forEach((el) => {
+            el.setAttribute('onclick', "location.href = '..'");
+            el.setAttribute('href', '..');
+        });
     }
 
     if (location.pathname.endsWith("/xsxy/xsxyqk_cxXsxyqkIndex.html")) {
@@ -173,12 +229,30 @@
                     return el ? Number(el.innerText) : NaN;
                 } catch { return NaN; }
             })();
+            /**
+             * @type {Array<[string, number]>}
+             * @description [DateString, AvgScore][]
+             */
             let history = (() => {
                 try {
-                    return JSON.parse(localStorage.getItem('betterBJUTOnline_score_history') ?? '[]');
+                    let fromLocalStorage = localStorage.getItem('betterBJUTOnline_score_history');
+                    if (fromLocalStorage) {
+                        localStorage.removeItem('betterBJUTOnline_score_history');
+                        let parsed = JSON.parse(fromLocalStorage);
+                        if (Array.isArray(parsed)) {
+                            GM_setValue('betterBJUTOnline_score_history', parsed);
+                        }
+                    }
+                    let value = GM_getValue('betterBJUTOnline_score_history', []);
+                    if (Array.isArray(value)) return value;
+                    else return [];
                 } catch { return []; }
             })();
-            let currentDate = new Date().toISOString().split('T')[0];
+            /**
+             * @type {string}
+             * @description YYYY-MM-DD
+             */
+            let currentDate = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
 
             if (!isNaN(avgScore)) {
                 if (history.length) {
@@ -187,7 +261,7 @@
                 } else history.push([currentDate, avgScore]);
             }
 
-            localStorage.setItem('betterBJUTOnline_score_history', JSON.stringify(history));
+            GM_setValue('betterBJUTOnline_score_history', history);
 
             const groupHistory = (history) => {
                 if (!history.length) return [];
@@ -585,5 +659,9 @@ tbody>tr:nth-child(2)>td:first-child { display: none }
             });
             window.print();
         });
+    }
+
+    if (GM_getValue("hideTips", false)) {
+        putStyleRule(`#Tips { display: none; }`);
     }
 })();
