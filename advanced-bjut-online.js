@@ -8,7 +8,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @icon         http://cdn.urongda.com/images/normal/medium/beijing-university-of-technology-logo-1024px.png
-// @version      0.1.1
+// @version      0.2.0
 // @updateURL    https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // @downloadURL  https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // ==/UserScript==
@@ -25,19 +25,29 @@
 //      - 提供优化的 PDF 打印样式
 // 4. 校门户站首页
 //      - 优化左下角工具区域排列顺序
-// 5. 全局通用优化
-//      - 隐藏教务首页照片
-//      - 教务系统点击左上角页面名称可退回主页
-//      - 个人信息页表格可拖拽调整高度
+// 5. 教务系统 - 隐藏教务首页照片
+// 6. 教务系统 - 点击左上角页面名称可退回主页
+// 7. 教务系统 - 个人信息页
+//      - 表格可拖拽调整高度
+// 8. WebVPN 功能     
+//      - WebVPN 首页左下角添加“保持会话活跃”按钮
+//        Note: 可以避免长时间不操作导致退出登录；使用成绩监测功能也可以保持会话活跃
 //      - 延长 WebVPN Cookies 有效期
-//        此功能在 Tampermonkey BETA 下可用，可以避免退出浏览器登陆状态丢失，但是数小时无操作导致的自动退出登录暂无法避免。
-//        若需要查成绩，请使用成绩监测功能，该功能可以保持会话活跃、避免自动退出登录。
+//        Note: 此功能在 Tampermonkey BETA 下可用，可以避免退出浏览器后登陆状态丢失
 
 (function () {
     "use strict";
     const disableOptimizedScorePanel = false;
 
+    /**
+     * @param {string} s 
+     * @returns {HTMLElement | null}
+     */
     const $ = (s) => document.querySelector(s);
+    /**
+     * @param {string} s 
+     * @returns {NodeListOf<HTMLElement>}
+     */
     const $$ = (s) => document.querySelectorAll(s);
 
     const action = (mode, condition, action, timeoutMs = 30000) => {
@@ -121,7 +131,7 @@
                                     text: "我们发现了一个成绩更新！",
                                     title: "成绩更新",
                                 });
-                                showScoreUpdateToast();
+                                showToast('成绩更新', '我们检测到了一个成绩更新');
                             }
                         }, 1000);
                     },
@@ -148,24 +158,22 @@
 .score-update-toast-message { font-size: 13px; color: #605e5c; line-height: 1.4; }
 `);
 
-    function showScoreUpdateToast() {
+    function showToast(title = '', content = '', timeout = 2000) {
         const existing = document.querySelector('.score-update-toast');
         if (existing) existing.remove();
 
         const toast = document.createElement('div');
         toast.className = 'score-update-toast';
         toast.innerHTML = `
-            <div class="score-update-toast-title">成绩更新</div>
-            <div class="score-update-toast-message">我们检测到了一个成绩更新</div>
+            <div class="score-update-toast-title">${title}</div>
+            <div class="score-update-toast-message">${content}</div>
         `;
         document.body.append(toast);
 
         let hideTimer = null;
-        let removeTimer = null;
 
         const cancelAutoHide = () => {
             if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-            if (removeTimer) { clearTimeout(removeTimer); removeTimer = null; }
         };
 
         const hide = () => {
@@ -176,7 +184,7 @@
 
         const onShow = () => {
             document.removeEventListener('visibilitychange', onShow);
-            hideTimer = setTimeout(hide, 3000);
+            hideTimer = setTimeout(hide, Math.max(timeout, 3000));
         };
 
         toast.addEventListener('click', hide);
@@ -184,7 +192,7 @@
         requestAnimationFrame(() => toast.classList.add('visible'));
 
         if (document.visibilityState === 'visible') {
-            hideTimer = setTimeout(hide, 2000);
+            hideTimer = setTimeout(hide, timeout);
         } else {
             document.addEventListener('visibilitychange', onShow);
         }
@@ -627,10 +635,43 @@
     }
 
     if (location.pathname.endsWith("/kbcx/xskbcx_cxXskbcxIndex.html")) {
+        // 隐藏无课程天
+        $('#innerContainer > div.row.sl_add_btn > div > div.pull-left').outerHTML = `
+<div class="pull-left" style="margin-left: 10px; margin-top: 5px;">
+    <input type="checkbox" id="doSimplify" name="doSimplify" style="margin: 0 0 0.5em 0;">
+    <label for="doSimplify" style="user-select: none; cursor: pointer;">隐藏无课程的天</label>
+</div>
+        `;
+        const simplifyCheckbox = $('#doSimplify');
+        const simplifyStyles = document.createElement('style');
+        simplifyCheckbox.addEventListener('change', () => {
+            if (simplifyCheckbox.checked) {
+                for (let i = 1; i <= 7; i++) {
+                    let hasClass = 0; 
+                    document.querySelectorAll(`#kbgrid_table_0  td[id^="${i}-"]`).forEach(el => hasClass += el.children.length);
+                    if (!hasClass) {
+                        // #kbgrid_table_0  td[id^="7"], #kbgrid_table_0 tbody > tr:nth-child(2) > td:nth-child(9)
+                        simplifyStyles.innerHTML += `#kbgrid_table_0  td[id^="${i}"], #kbgrid_table_0 tbody > tr:nth-child(2) > td:nth-child(${i + 2}) { display: none; }`;
+                    }
+                }
+                document.head.appendChild(simplifyStyles);
+            } else {
+                simplifyStyles.innerHTML = '';
+            }
+        });
+        document.body.appendChild(simplifyStyles);
+        $('#search_go').addEventListener('click', () => {
+            if (simplifyCheckbox.checked) {
+                simplifyStyles.innerHTML = '';
+                simplifyCheckbox.checked = false;
+            }
+        });
+
+        // 生成模拟数据：document.querySelectorAll(".timetable_con .title font").forEach((el)=>(el.innerText="课程 "+Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,"0")),);document.querySelectorAll(".timetable_con > *:nth-child(2) font:nth-child(2)").forEach((el)=>(el.innerText=el.innerText.replace(/\d+-\d+周/g,"1-16周")),);document.querySelectorAll(".timetable_con > *:nth-child(3) font:nth-child(2)").forEach((el)=>(el.innerText=` 本部 ${Math.floor(Math.random()*3)+1}教${Math.floor(Math.random()*3)+1}${(Math.floor(Math.random()*20)+1).toString().padStart(2,"0")}`),);document.querySelectorAll(".timetable_con > *:nth-child(5) font:nth-child(2)").forEach((el)=>(el.innerText=" 教师 "+Math.floor(Math.random()*256).toString(16).toUpperCase().padStart(2,"0")),);
         const btnElement = $('button#shcPDF');
         if (!btnElement) return;
         btnElement.parentNode.replaceChild(btnElement.cloneNode(true), btnElement);
-        $('button#shcPDF').innerText = ' 输出更好的PDF';
+        $('button#shcPDF').innerHTML = '<span class="bigger-120 glyphicon glyphicon-print"></span> <b>打印</b>';
         $('button#shcPDF').addEventListener('click', () => {
             const kbTable = $('table#kbgrid_table_0');
             if (!kbTable) return;
@@ -641,6 +682,8 @@
 .timetable_con> :nth-child(n+2) { font-weight: 500; opacity: 0.8 }
 .timetable_con * { color: #333 }
 table#kbgrid_table_0 * { font-family: Noto Sans SC }
+#kbgrid_table_0 > tbody > tr:last-child > td > div.timetable_title { display: flex; align-items: center; justify-content: center; opacity: 0.8; }
+#kbgrid_table_0 > tbody > tr:last-child > td > div.timetable_title * { font-family: Noto Sans SC !important; font-size: 1.6rem !important; }
 table#kbgrid_table_0 tr:first-child { display: none }
 table#kbgrid_table_0 td { padding: 4px 8px }
 table#kbgrid_table_0 { background: #fff; height: 100%; left: 0; margin: 0!important; top: 0; width: 100% !important }
@@ -663,5 +706,69 @@ tbody>tr:nth-child(2)>td:first-child { display: none }
 
     if (GM_getValue("hideTips", false)) {
         putStyleRule(`#Tips { display: none; }`);
+    }
+
+    if (location.pathname == '/' && location.host == 'webvpn.bjut.edu.cn') {
+        putStyles(`
+.el-scrollbar__wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+button.btn-keep-active {
+  margin: 0.5em 1em;
+  font-size: 14px;
+  padding: 6px 16px;
+  border-radius: 4px; /* Fluent 标准圆角 */
+  border: 1px solid #d2d0ce; /* 灰框 */
+  background-color: #ffffff; /* 白底 */
+  color: #323130; /* Fluent 深灰文本 */
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.1s;
+}
+
+button.btn-keep-active:hover {
+  background-color: #f3f2f1;
+}
+
+button.btn-keep-active:active {
+  background-color: #f5f4f3;
+}
+
+button.btn-keep-active:disabled {
+  background-color: #ffffff;
+  opacity: 0.75;
+  cursor: default;
+  box-shadow: none;
+}
+`);
+        const btnKeepActive = document.createElement('button');
+        btnKeepActive.className = 'btn-keep-active';
+        btnKeepActive.textContent = '保持会话活跃';
+        btnKeepActive.addEventListener('click', () => {
+            let keepActiveWorker = null;
+            try {
+                keepActiveWorker = new Worker(
+                    "data:application/javascript;base64," +
+                    btoa(
+                        `const tick=()=>{postMessage(null);setTimeout(tick,(25+Math.random()*10)*60*1000)};tick();`,
+                    ),
+                );
+                keepActiveWorker.onmessage = () => {
+                    fetch(location.href, { method: 'GET', credentials: 'include' });
+                    btnKeepActive.textContent = `保持会话活跃中`;
+                };
+                btnKeepActive.disabled = true;
+                showToast('保持会话活跃中', '这个功能可以避免长时间不操作导致失去登陆状态，请不要关闭此页面', 10000);
+            } catch (err) { 
+                btnKeepActive.disabled = true;
+                btnKeepActive.textContent = '保持会话活跃功能不可用';
+            }
+        });
+        action("until", () => $('.el-scrollbar__wrap'), () => {
+            $('.el-scrollbar__wrap').appendChild(btnKeepActive);
+        });
     }
 })();

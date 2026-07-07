@@ -38,49 +38,72 @@
          <h2>Advanced-BJUT-Online</h2>
          <b>更好的北京工业大学教务 / 门户使用体验</b>
          <br />
-         <br />
-         <i><b>包括...</b></i>
       </div>
-      <p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(32em, 100%)" /></p>
+      <p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(32em, 100%)" />
+      </p>
       <div align="center">
-         <i><b>以及</b></i><br />
-         <small>
-            隐藏教务系统首页照片<br />
-            优化门户网站左下角工具区域排列顺序<br />
-            隐藏教务系统顶部 Tips 提示条<br />
-            教务系统个人信息页表格可拖拽调整高度<br />
-            WebVPN 会话 Cookies 持久化 <small>Tampermonkey BETA 有效</small>
-         </small>
       </div>
       <h3>安装</h3>
-      <p>
-         若您已经安装了 Tampermonkey（油猴 / 篡改猴）插件，请点击该
-         <a
+      <p>若您已经安装了 Tampermonkey（油猴 / 篡改猴）插件，请点击该 <a
             href="https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js"><strong>链接</strong></a>
-         添加此脚本。
-      </p>
+         添加此脚本。</p>
       <p>若您还未安装上述插件，请使用该提示词询问 AI 如何安装：</p>
       <pre class="click-to-copy"><code>请告诉我如何在我的浏览器上安装 Tampermonkey 插件。我的浏览器是 [浏览器名称]、系统为 [系统名称]。
-在安装完成后，我希望添加脚本：https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
+在安装 Tampermonkey 完成后，我希望添加脚本 Advanced BJUT Online，URL 为：https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 </code></pre>
-      <script>
-         const clickToCopyElements = document.querySelectorAll('.click-to-copy');
-         clickToCopyElements.forEach((element) => {
-            element.addEventListener('click', () => {
-               const textToCopy = element.textContent;
-               navigator.clipboard.writeText(textToCopy);
-            });
-         });
-      </script>
-      <p>如果您喜欢这个工具的话，欢迎 Star <b><a href="https://github.com/DeepslateBricks/Advanced-BJUT-Online" target="_blank">GitHub 仓库</a></b> 支持我们~</p>
+      <p>如果您喜欢这个工具的话，欢迎 Star <b><a href="https://github.com/DeepslateBricks/Advanced-BJUT-Online" target="_blank">GitHub
+               仓库</a></b> 支持我们~</p>
+      <h3>主要功能介绍</h3>
+      <ol>
+         <li>
+            <p><em><strong>教务系统</strong></em> - <strong>学生学业情况查询</strong> </p>
+            <ul>
+               <li><strong>优化修读情况展示</strong>：自动将 <u>页面顶部</u> 的修读情况（加权平均分、修读课程数等）信息整理为表格卡片；</li>
+               <li><strong>显示加权平均分历史</strong>：记录加权平均分变化，并 <u>在页面底部显示</u>；</li>
+               <li>
+                  <strong>试算加权平均分面板</strong>：<u>在页面底部点击入口进入</u>，可以编辑每门课程的课程得分、查看在该得分下自己的加权平均分会是多少。其中绿色表示已经出分的课程，黄色表示已修读但还未出分的课程。
+               </li>
+            </ul>
+         </li>
+         <li>
+            <p><em><strong>教务系统</strong></em> - <strong>学生成绩查询</strong></p>
+            <ul>
+               <li><strong>监听成绩更新</strong>：<u>点击查询按钮左侧的监测按钮</u> 可以自动检测成绩更新，在成绩更新时自动通过系统通知的方式提示；</li>
+            </ul>
+         </li>
+         <li>
+            <p><em><strong>教务系统</strong></em> - <strong>个人课表查询</strong></p>
+            <ul>
+               <li><strong>隐藏无课程的天</strong>：<u>勾选顶部左侧“隐藏无课程的天”复选框</u> 以启用。开启后例如周六、日没有课程安排，则会自动隐藏课表中周六、日两天的列；</li>
+               <li><strong>更好的课表导出</strong>：<u>点击顶部右侧“打印”按钮</u> 可以打印 / 导出更加简洁、美观、易于阅读的课表。</li>
+            </ul>
+         </li>
+         <li>
+            <p><em><strong>WebVPN</strong></em> - <strong>首页</strong></p>
+            <ul>
+               <li><strong>保持会话活跃</strong>：<u>点击左下角的“保持会话活跃”按钮</u> 可以避免长时间无操作导致自动退出登录。点击按钮后请不要关闭这个页面。</li>
+            </ul>
+         </li>
+      </ol>
       <h3>声明</h3>
-      <p>
-         若该工具违反了学校相关规定，请您通过 Issues 等方式联系我。我会在收到通知的第一时间下架相关工具或删除相关内容。
-      </p>
-      <p>
-         本项目为作者个人利用业余时间开发的技术交流与分享项目。本项目非学校官方授权、非官方组织开发，其所有代码及功能均不代表学校的任何官方立场。
-      </p>
+      <p>若该工具违反了学校相关规定，请您通过 Issues 等方式联系我。我会在收到通知的第一时间=下架相关工具或删除相关内容。</p>
+      <p>本项目为作者个人利用业余时间开发的技术交流与分享项目。本项目非学校官方授权、非官方组织开发，其所有代码及功能均不代表学校的任何官方立场。</p>
    </div>
+   <script>
+      const clickToCopyElements = document.querySelectorAll('.click-to-copy');
+      clickToCopyElements.forEach((element) => {
+         element.addEventListener('click', () => {
+            const textToCopy = element.textContent;
+            navigator.clipboard.writeText(textToCopy);
+         });
+      });
+   </script>
+   <style>
+      u {
+         text-decoration: none !important;
+         border-bottom: 1px solid;
+      }
+   </style>
 </body>
 
 </html>

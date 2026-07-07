@@ -2,19 +2,10 @@
    <h2>Advanced-BJUT-Online</h2>
    <b>更好的北京工业大学教务 / 门户使用体验</b>
    <br />
-   <br />
-   <i><b>包括...</b></i>
+
 </div>
 <p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(32em, 100%)" /></p>
 <div align="center">
-   <i><b>以及</b></i><br/>
-   <small>
-      隐藏教务系统首页照片<br />
-      优化门户网站左下角工具区域排列顺序<br />
-      隐藏教务系统顶部 Tips 提示条<br />
-      教务系统个人信息页表格可拖拽调整高度<br />
-      WebVPN 会话 Cookies 持久化 <small>Tampermonkey BETA 有效</small>
-   </small>
 </div>
 
 ### 安装
@@ -23,10 +14,28 @@
 
 若您还未安装上述插件，请使用该提示词询问 AI 如何安装：
 
-```
-请告诉我如何在我的浏览器上安装 Tampermonkey 插件。我的浏览器是 [浏览器名称]、系统为 [系统名称]。
-在安装完成后，我希望添加脚本：https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
-```
+<pre class="click-to-copy"><code>请告诉我如何在我的浏览器上安装 Tampermonkey 插件。我的浏览器是 [浏览器名称]、系统为 [系统名称]。
+在安装 Tampermonkey 完成后，我希望添加脚本 Advanced BJUT Online，URL 为：https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
+</code></pre>
+
+如果您喜欢这个工具的话，欢迎 Star <b><a href="https://github.com/DeepslateBricks/Advanced-BJUT-Online" target="_blank">GitHub 仓库</a></b> 支持我们~
+
+### 主要功能介绍
+
+1. ***教务系统*** - **学生学业情况查询**  
+   - **优化修读情况展示**：自动将 <u>页面顶部</u> 的修读情况（加权平均分、修读课程数等）信息整理为表格卡片；
+   - **显示加权平均分历史**：记录加权平均分变化，并 <u>在页面底部显示</u>；
+   - **试算加权平均分面板**：<u>在页面底部点击入口进入</u>，可以编辑每门课程的课程得分、查看在该得分下自己的加权平均分会是多少。其中绿色表示已经出分的课程，黄色表示已修读但还未出分的课程。
+
+2. ***教务系统*** - **学生成绩查询**
+   - **监听成绩更新**：<u>点击查询按钮左侧的监测按钮</u> 可以自动检测成绩更新，在成绩更新时自动通过系统通知的方式提示；
+
+3. ***教务系统*** - **个人课表查询**
+   - **隐藏无课程的天**：<u>勾选顶部左侧“隐藏无课程的天”复选框</u> 以启用。开启后例如周六、日没有课程安排，则会自动隐藏课表中周六、日两天的列；
+   - **更好的课表导出**：<u>点击顶部右侧“打印”按钮</u> 可以打印 / 导出更加简洁、美观、易于阅读的课表。
+
+4. ***WebVPN*** - **首页**
+   - **保持会话活跃**：<u>点击左下角的“保持会话活跃”按钮</u> 可以避免长时间无操作导致自动退出登录。点击按钮后请不要关闭这个页面。
 
 ### 声明
 
