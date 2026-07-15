@@ -7,8 +7,9 @@
 // @grant        GM_cookie
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @icon         http://cdn.urongda.com/images/normal/medium/beijing-university-of-technology-logo-1024px.png
-// @version      0.2.0
+// @version      0.2.1
 // @updateURL    https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // @downloadURL  https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // ==/UserScript==
@@ -29,7 +30,7 @@
 // 6. 教务系统 - 点击左上角页面名称可退回主页
 // 7. 教务系统 - 个人信息页
 //      - 表格可拖拽调整高度
-// 8. WebVPN 功能     
+// 8. WebVPN 功能
 //      - WebVPN 首页左下角添加“保持会话活跃”按钮
 //        Note: 可以避免长时间不操作导致退出登录；使用成绩监测功能也可以保持会话活跃
 //      - 延长 WebVPN Cookies 有效期
@@ -40,12 +41,12 @@
     const disableOptimizedScorePanel = false;
 
     /**
-     * @param {string} s 
+     * @param {string} s
      * @returns {HTMLElement | null}
      */
     const $ = (s) => document.querySelector(s);
     /**
-     * @param {string} s 
+     * @param {string} s
      * @returns {NodeListOf<HTMLElement>}
      */
     const $$ = (s) => document.querySelectorAll(s);
@@ -446,8 +447,15 @@
 .fluent-dialog { background: #ffffff; border: 1px solid #d1d1d1; border-radius: 8px; box-shadow: 0 32px 64px rgba(0,0,0,0.14), 0 2px 21px rgba(0,0,0,0.1); width: 90%; max-width: 680px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; animation: fluentScaleUp 0.15s cubic-bezier(0,0,0,1); }
 @keyframes fluentScaleUp { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 .fluent-header { padding: 24px 24px 16px 24px; background: #ffffff; }
-.fluent-title { font-size: 20px; font-weight: 600; color: #242424; margin: 0 0 14px 0; }
-.fluent-avg-display { font-size: 13px; color: #004578; background: #f0f7ff; padding: 12px 16px; border-radius: 4px; border-left: 4px solid #0f6cbd; font-weight: 400; line-height: 1.5; }
+.fluent-avg-card { margin: 0; padding: 20px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; }
+.fluent-avg-card-title { font-size: 15px; font-weight: 600; color: #323130; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.fluent-avg-card-title::before { content: ""; display: inline-block; width: 3px; height: 14px; background-color: #0078d4; border-radius: 2px; }
+.fluent-avg-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; list-style: none; padding: 0; margin: 0; }
+@media (max-width: 480px) { .fluent-avg-card-grid { grid-template-columns: repeat(1, 1fr); } }
+.fluent-avg-card-item { display: flex; flex-direction: column; gap: 4px; padding: 12px; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 4px; transition: all 0.15s ease; }
+.fluent-avg-card-item:hover { background-color: #f3f2f1; border-color: #e0e0e0; }
+.fluent-avg-card-label { color: hsl(30, 2%, 16%); font-size: 12px; }
+.fluent-avg-card-value { color: #0078d4; font-weight: 600; font-size: 16px; }
 .fluent-body { padding: 0 24px; overflow-y: auto; flex: 1; }
 .fluent-dialog-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
 .fluent-dialog-table th { position: sticky; top: 0; background: #ffffff; padding: 10px 12px; font-size: 12px; font-weight: 600; color: #616161; text-align: left; border-bottom: 1px solid #e0e0e0; z-index: 2; }
@@ -463,6 +471,8 @@
 .fluent-score-input.status-studying::placeholder { color: #d1b06b; }
 .fluent-score-input.status-passed::placeholder { color: #79a68a; }
 `);
+
+        let dialogExists = false;
 
         action("until", () => document.querySelectorAll('table.table tbody tr').length > 0 && !!$('.score-history-card'), () => {
             const tableRows = document.querySelectorAll('table.table tbody tr');
@@ -502,11 +512,15 @@
             targetCard.parentNode.insertBefore(mainBtn, targetCard.nextSibling);
 
             mainBtn.addEventListener('click', () => {
-                renderFluentDialog(courses);
+                if (!dialogExists) {
+                    renderFluentDialog(courses);
+                }
             });
         });
 
         function renderFluentDialog(courses) {
+            dialogExists = true;
+
             const backdrop = document.createElement('div');
             backdrop.className = 'fluent-backdrop';
 
@@ -516,16 +530,32 @@
             const header = document.createElement('div');
             header.className = 'fluent-header';
 
-            const title = document.createElement('h3');
-            title.className = 'fluent-title';
-            title.textContent = '加权平均分试算面板';
+            const avgCard = document.createElement('div');
+            avgCard.className = 'fluent-avg-card';
+            avgCard.innerHTML = `
+                <div class="fluent-avg-card-title">加权平均分试算</div>
+                <div class="fluent-avg-card-grid">
+                    <div class="fluent-avg-card-item">
+                        <span class="fluent-avg-card-label">加权平均分</span>
+                        <span class="fluent-avg-card-value" id="avg-primary">-</span>
+                    </div>
+                    <div class="fluent-avg-card-item" style="cursor: pointer;" id="avg-excluded-card">
+                        <span class="fluent-avg-card-label">
+                            排除通识教育选修课
+                            <span class="glyphicon glyphicon-info-sign" style="opacity: 0.5"></span>
+                        </span>
+                        <span class="fluent-avg-card-value" id="avg-excluded">-</span>
+                    </div>
+                    <div class="fluent-avg-card-item">
+                        <span class="fluent-avg-card-label">计入总学分</span>
+                        <span class="fluent-avg-card-value" id="avg-credits">-</span>
+                    </div>
+                </div>
+            `;
 
-            const avgDisplay = document.createElement('div');
-            avgDisplay.className = 'fluent-avg-display';
-
-            header.appendChild(title);
-            header.appendChild(avgDisplay);
+            header.appendChild(avgCard);
             dialog.appendChild(header);
+
 
             const body = document.createElement('div');
             body.className = 'fluent-body';
@@ -583,7 +613,10 @@
             const closeBtn = document.createElement('button');
             closeBtn.className = 'fluent-btn-close';
             closeBtn.textContent = '关闭面板';
-            closeBtn.addEventListener('click', () => backdrop.remove());
+            closeBtn.addEventListener('click', () => {
+                backdrop.remove()
+                dialogExists = false;
+            });
 
             footer.appendChild(closeBtn);
             dialog.appendChild(footer);
@@ -593,6 +626,8 @@
             function updateWeightedAverage() {
                 let totalWeightedScore = 0;
                 let totalCredits = 0;
+                let totalWeightedScoreExcluded = 0;
+                let totalCreditsExcluded = 0;
                 const inputRows = tbody.querySelectorAll('tr');
 
                 inputRows.forEach(row => {
@@ -608,15 +643,28 @@
                         if (!isNaN(score) && score >= 0 && score <= 100) {
                             totalWeightedScore += score * credit;
                             totalCredits += credit;
+                            if (nature !== '通识教育选修课') {
+                                totalWeightedScoreExcluded += score * credit;
+                                totalCreditsExcluded += credit;
+                            }
                         }
                     }
                 });
 
+                const avgPrimary = document.getElementById('avg-primary');
+                const avgExcludedEl = document.getElementById('avg-excluded');
+                const avgCreditsEl = document.getElementById('avg-credits');
+
                 if (totalCredits > 0) {
                     const avg = (totalWeightedScore / totalCredits).toFixed(2);
-                    avgDisplay.innerHTML = `加权平均分：<strong style="color: #0f6cbd; font-size: 15px;">${avg}</strong>（当前计入总学分: ${totalCredits}）`;
+                    const avgExcluded = totalCreditsExcluded > 0 ? (totalWeightedScoreExcluded / totalCreditsExcluded).toFixed(2) : avg;
+                    avgPrimary.textContent = avg;
+                    avgExcludedEl.textContent = avgExcluded;
+                    avgCreditsEl.textContent = totalCredits;
                 } else {
-                    avgDisplay.innerHTML = `加权平均分：<span style="color: #c52530; font-weight: 600;">暂无有效存在成绩的计算科目</span>`;
+                    avgPrimary.textContent = '暂无有效成绩';
+                    avgExcludedEl.textContent = '暂无有效成绩';
+                    avgCreditsEl.textContent = '0';
                 }
             }
 
@@ -625,6 +673,13 @@
                     updateWeightedAverage();
                 }
             });
+
+            $('#avg-excluded-card')?.addEventListener('click', () => {
+                showToast('排除通识教育选修课的加权平均分', '根据<b>《北京工业大学推荐优秀应届本科毕业生免试攻读研究生的实施办法》</b>（2025 年 7 月）<p style="text-align: center; font-family: 宋体; margin: 0.5em">从2024级开始，通识教育选修课不纳入推免加权平均分计算。</p>但需要注意的是，这些课程仍会对专业排名、成绩单等产生影响。以上提示仅供参考，请以学校最新政策为准。', 30000);
+            });
+            try {
+                unsafeWindow.$('#avg-excluded-card .fluent-avg-card-label').popover({ content: `单击查看详情`, trigger: 'hover', placement: 'bottom' });
+            } catch (e) { }
 
             updateWeightedAverage();
         }
@@ -647,7 +702,7 @@
         simplifyCheckbox.addEventListener('change', () => {
             if (simplifyCheckbox.checked) {
                 for (let i = 1; i <= 7; i++) {
-                    let hasClass = 0; 
+                    let hasClass = 0;
                     document.querySelectorAll(`#kbgrid_table_0  td[id^="${i}-"]`).forEach(el => hasClass += el.children.length);
                     if (!hasClass) {
                         // #kbgrid_table_0  td[id^="7"], #kbgrid_table_0 tbody > tr:nth-child(2) > td:nth-child(9)
@@ -757,12 +812,12 @@ button.btn-keep-active:disabled {
                     ),
                 );
                 keepActiveWorker.onmessage = () => {
-                    fetch(location.href, { method: 'GET', credentials: 'include' });
+                    fetch("https://webvpn.bjut.edu.cn/user/recent?isPortal=true&_t=" + new Date().getTime(), { method: 'GET', credentials: 'include' });
                     btnKeepActive.textContent = `保持会话活跃中`;
                 };
                 btnKeepActive.disabled = true;
                 showToast('保持会话活跃中', '这个功能可以避免长时间不操作导致失去登陆状态，请不要关闭此页面', 10000);
-            } catch (err) { 
+            } catch (err) {
                 btnKeepActive.disabled = true;
                 btnKeepActive.textContent = '保持会话活跃功能不可用';
             }
