@@ -3,13 +3,15 @@
 // @description  更好的北京工业大学教务 / 门户使用体验
 // @match        https://webvpn.bjut.edu.cn/*
 // @match        https://jwglxt.bjut.edu.cn/*
+// @match        https://*.chaoxing.com/*
 // @grant        GM_notification
 // @grant        GM_cookie
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_openInTab
 // @grant        unsafeWindow
 // @icon         http://cdn.urongda.com/images/normal/medium/beijing-university-of-technology-logo-1024px.png
-// @version      0.2.1
+// @version      0.3.0
 // @updateURL    https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // @downloadURL  https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // ==/UserScript==
@@ -35,6 +37,11 @@
 //        Note: 可以避免长时间不操作导致退出登录；使用成绩监测功能也可以保持会话活跃
 //      - 延长 WebVPN Cookies 有效期
 //        Note: 此功能在 Tampermonkey BETA 下可用，可以避免退出浏览器后登陆状态丢失
+// 9. 学习通主页优化
+//      - 美化主页样式
+//      - 在侧栏添加查看作业 / 考试功能
+//      - 优化课程列表样式，添加快捷进入作业、章节等模块的按钮
+//    Tip: 此功能可在右上角菜单开启或禁用
 
 (function () {
     "use strict";
@@ -300,12 +307,12 @@
                 return `
         <li class="score-history-item${hasSubEntries ? ' score-history-group' : ''}">
             ${group.map((h, idx) => {
-                const isRoot = idx === group.length - 1;
-                return `<div class="score-history-entry${isRoot ? ' root-entry' : ' sub-entry'}">
+                    const isRoot = idx === group.length - 1;
+                    return `<div class="score-history-entry${isRoot ? ' root-entry' : ' sub-entry'}">
                     <span class="score-history-date">${isRoot ? (hasSubEntries ? '> ' : '- ') : '&nbsp;'} ${h[0]}</span>
                     <span class="score-history-value">${h[1]}</span>
                 </div>`;
-            }).join('')}
+                }).join('')}
         </li>`;
             }).join('');
 
@@ -584,7 +591,7 @@
                 const initScore = course.score !== null ? course.score : '';
                 const isExcluded = (course.nature === '校选修课' || course.nature === '自主课程');
                 const natureContent = isExcluded
-                ? `${course.nature} <span style="font-size: 11px; font-weight: 600;">(不计入加权)</span>`
+                    ? `${course.nature} <span style="font-size: 11px; font-weight: 600;">(不计入加权)</span>`
                     : `<span style="color: #616161;">${course.nature}</span>`;
 
                 let inputBg = '';
@@ -759,7 +766,7 @@ tbody>tr:nth-child(2)>td:first-child { display: none }
         });
     }
 
-    if (GM_getValue("hideTips", false)) {
+    if (1 || GM_getValue("hideTips", false)) {
         putStyleRule(`#Tips { display: none; }`);
     }
 
@@ -825,5 +832,222 @@ button.btn-keep-active:disabled {
         action("until", () => $('.el-scrollbar__wrap'), () => {
             $('.el-scrollbar__wrap').appendChild(btnKeepActive);
         });
+    }
+
+    if (location.href.startsWith(`https://i.chaoxing.com/base`) || location.href.startsWith(`https://mooc2-ans.chaoxing.com/visit/interaction`)) {
+        action("until", () => $('.user-popup > ul > #exit'), () => {
+            $('.user-popup > ul > #exit').insertAdjacentHTML('beforeBegin', `<li id="switchUserscript">${GM_getValue('enableInXuexitong', true) ? '禁用' : '启用'}插件</li>`);
+            $('#switchUserscript').addEventListener('click', () => {
+                if (GM_getValue('enableInXuexitong', true) == false) GM_setValue('enableInXuexitong', true);
+                else GM_setValue('enableInXuexitong', false);
+                window.location.reload();
+            });
+        });
+        if (GM_getValue('enableInXuexitong', true)) {
+            putStyles(`
+ .course-list .learnCourse {
+    display: flex;
+    height: fit-content;
+    margin-bottom: 1.5em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin: 1em !important;
+}
+.course-list .course-cover {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+.course-list .course-modules {
+    position: absolute;
+    bottom: -3em;
+    transform: translateY(50%);
+    width: calc(100% - 4em);
+    background: #fff;
+    padding: 0.5em 1em;
+    z-index: 99999;
+    margin: 0 1em;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16);
+    display: flex;
+    justify-content: space-around;
+    opacity: 0;
+    transform: translateY(0%);
+    transition: opacity 0.2s, transform 0.2s;
+}
+.course:hover .course-modules {
+    opacity: 1;
+    transform: translateY(50%);
+    cursor: default;
+}
+.course-list .course-modules a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #000;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+.course-list .course-modules a:hover {
+    opacity: 1;
+}
+.svg-icon-20-000 {
+    width: 20px;
+    fill: #000;
+}
+.course-list .course-cover>a img {
+    height: fit-content;
+}
+.course-list .course-info {
+    backdrop-filter: blur(10px);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.75));
+    width: 100%;
+    padding: 1em;
+}
+.course-list .course-info a {
+    transition: color 0.2s;
+}
+div#courseList {
+    width: auto !important;
+}
+.path-box.clear {
+    position: absolute;
+}
+.course-list > * {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-evenly;
+}
+.course-list .course-cover .hanlde-list {
+    opacity: 0;
+    border-radius: 0 !important;
+    filter: grayscale(1);
+    transition: opacity 0.2s;
+}
+.course-list .course-cover .hanlde-list:hover {
+    opacity: 0.8;
+}
+.course-tab .tab-item.current::after {
+    background: #4D58B5;
+    width: 64px;
+}
+a#addCourse {
+    background: #4D58B5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+a#addFolder, a.fr.assistantBtn, .dataSearch_input {
+    border-radius: 4px !important;
+}
+.space-con {
+    background: #fff;
+    color: #000;
+}
+.con-left.con-left-float.showIcon {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+.space-unit {
+    background: #fff !important;
+    color: #000 !important;
+}
+.user-popup {
+    background: #fff !important;
+    color: #000 !important;
+}
+.header, .header > * {
+    height: 5em !important;
+}
+.user-popup {
+    top: 5em !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+div#to_top {
+    display: none;
+}
+.svg-icon-20-fff {
+    width: 20px;
+    fill: #fff;
+}
+`);
+            setInterval(() => {
+                $$('.course-list .course:not(.p)').forEach(el => {
+                    const targetUrl = el.querySelector('.course-info h3 a').href;
+                    el.querySelector('.course-info').addEventListener('click', () => el.querySelector('.course-info h3 a').click());
+                    const createIcon = path => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-icon-20-000"><path d="${path}"></path></svg>`;
+                    el.insertAdjacentHTML('beforeEnd', `
+<div class="course-modules">
+    <a href="${targetUrl}&pageHeader=8" target="_blank">
+    ${createIcon("M3,7V5H5V4C5,2.89 5.9,2 7,2H13V9L15.5,7.5L18,9V2H19C20.05,2 21,2.95 21,4V20C21,21.05 20.05,22 19,22H7C5.95,22 5,21.05 5,20V19H3V17H5V13H3V11H5V7H3M7,11H5V13H7V11M7,7V5H5V7H7M7,19V17H5V19H7Z")}
+    作业
+    </a>
+    <a href="${targetUrl}&pageHeader=1" target="_blank">
+    ${createIcon("M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3M7 7H9V9H7V7M7 11H9V13H7V11M7 15H9V17H7V15M17 17H11V15H17V17M17 13H11V11H17V13M17 9H11V7H17V9Z")}
+    章节
+    </a>
+    <a href="${targetUrl}&pageHeader=3" target="_blank">
+    ${createIcon("M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z")}
+    资料
+    </a>
+    <a href="${targetUrl}&pageHeader=9" target="_blank">
+    ${createIcon("M4 2V8H2V2H4M2 22V16H4V22H2M5 12C5 13.11 4.11 14 3 14C1.9 14 1 13.11 1 12C1 10.9 1.9 10 3 10C4.11 10 5 10.9 5 12M16 4C20.42 4 24 7.58 24 12C24 16.42 20.42 20 16 20C12.4 20 9.36 17.62 8.35 14.35L6 12L8.35 9.65C9.36 6.38 12.4 4 16 4M15 13L19.53 15.79L20.33 14.5L16.5 12.2V7H15V13Z")}
+    考试
+    </a>
+</div>
+`);
+                    el.classList.add('p');
+                });
+            }, 200);
+            const putMenuItem = (name, url, id, icon) =>$('.menu-list-ul > *:first-child').insertAdjacentHTML('afterEnd', `
+<li level="1" parent-id="" table-type="1" parent-type="" data-id="${id}">
+    <div role="menuitem" level="1" focus_element="0" tabindex="-1" name="${name}" id="first${id}" onclick="setUrl('${id}','${url}',this,'0','${name}');" imgname="icon-home" dataurl="https://mooc1-api.chaoxing.com/work/stu-work" class="label-item" aria-label="作业菜单项已访问">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-space iconfont svg-icon-20-fff"><path d="${icon}"></path></svg>
+        <h3 title="${name}">${name}</h3>
+        <span class="slide-arrow iconfont icon-down2 hide"></span>
+    </div>
+</li>
+            `);
+            putMenuItem('考试', 'https://mooc1-api.chaoxing.com/exam-ans/exam/phone/examcode', 22345, 'M4 2V8H2V2H4M2 22V16H4V22H2M5 12C5 13.11 4.11 14 3 14C1.9 14 1 13.11 1 12C1 10.9 1.9 10 3 10C4.11 10 5 10.9 5 12M16 4C20.42 4 24 7.58 24 12C24 16.42 20.42 20 16 20C12.4 20 9.36 17.62 8.35 14.35L6 12L8.35 9.65C9.36 6.38 12.4 4 16 4M15 13L19.53 15.79L20.33 14.5L16.5 12.2V7H15V13Z');
+            putMenuItem('作业', 'https://mooc1-api.chaoxing.com/work/stu-work', 12345, 'M3,7V5H5V4C5,2.89 5.9,2 7,2H13V9L15.5,7.5L18,9V2H19C20.05,2 21,2.95 21,4V20C21,21.05 20.05,22 19,22H7C5.95,22 5,21.05 5,20V19H3V17H5V13H3V11H5V7H3M7,11H5V13H7V11M7,7V5H5V7H7M7,19V17H5V19H7Z');
+        }
+    }
+    if (location.href.startsWith(`https://mooc1-api.chaoxing.com/work/stu-work`)) {
+        const toPcWorkUrl = raw => {
+            const q = new URL(raw, location.origin).searchParams;
+            const g = k => q.get(k) || q.get(k.toLowerCase()) || '';
+            return `https://mooc1.chaoxing.com/visit/stucoursemiddle?ismooc2=1&courseid=${g('courseId')}&clazzid=${g('clazzId')}&pageHeader=8`;
+        };
+        setInterval(() => {
+            $$('.nav > li[data]:not(li.p)').forEach( el => {
+                el.addEventListener('click', () => GM_openInTab(toPcWorkUrl(el.getAttribute('data')), { active: true }));
+                el.classList.add('p');
+            });
+        }, 200);
+        putStyles(`
+* { font-size: 16px !important; }
+.seacherDiv { display: none; }
+.nav > li { cursor: pointer; }
+        `);
+    }
+    if (location.href.startsWith(`https://mooc1-api.chaoxing.com/exam-ans/exam/phone/examcode`)) {
+        const toExamUrl = raw => {
+            const p = new URL(raw, location.href).searchParams;
+            const g = k => p.get(k) || '';
+            return `https://mooc1-api.chaoxing.com/exam-ans/exam/test/examcode/examnotes?courseId=${g('courseId')}&classId=${g('classId')}&examId=${g('taskrefId')}`;
+        };
+        setInterval(() => {
+            $$('.ks_list > li[data]:not(li.p)').forEach(el => {
+                el.innerHTML += '&nbsp;';
+                el.addEventListener('click', () => GM_openInTab(toExamUrl(el.getAttribute('data')), { active: true }));
+                el.classList.add('p');
+            });
+        }, 200);
+        putStyles(`
+body { zoom: 0.5 !important; }
+.seacherDiv { display: none; }
+.ks_list > li { cursor: pointer; }
+    `);
     }
 })();
