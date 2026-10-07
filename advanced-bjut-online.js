@@ -11,7 +11,7 @@
 // @grant        GM_openInTab
 // @grant        unsafeWindow
 // @icon         http://cdn.urongda.com/images/normal/medium/beijing-university-of-technology-logo-1024px.png
-// @version      0.3.0
+// @version      0.3.1
 // @updateURL    https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // @downloadURL  https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 // ==/UserScript==
@@ -37,11 +37,6 @@
 //        Note: 可以避免长时间不操作导致退出登录；使用成绩监测功能也可以保持会话活跃
 //      - 延长 WebVPN Cookies 有效期
 //        Note: 此功能在 Tampermonkey BETA 下可用，可以避免退出浏览器后登陆状态丢失
-// 9. 学习通主页优化
-//      - 美化主页样式
-//      - 在侧栏添加查看作业 / 考试功能
-//      - 优化课程列表样式，添加快捷进入作业、章节等模块的按钮
-//    Tip: 此功能可在右上角菜单开启或禁用
 
 (function () {
     "use strict";
@@ -844,6 +839,8 @@ button.btn-keep-active:disabled {
             });
         });
         if (GM_getValue('enableInXuexitong', true)) {
+            const iconUrl = 'data:image/webp;base64,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';
+            document.head.insertAdjacentHTML('beforeend', `<link rel="icon" type="image/png" href="${iconUrl}">`);
             putStyles(`
  .course-list .learnCourse {
     display: flex;
@@ -921,6 +918,9 @@ div#courseList {
     align-items: center;
     justify-content: space-evenly;
 }
+.course-list {
+    overflow: unset !important;
+}
 .course-list .course-cover .hanlde-list {
     opacity: 0;
     border-radius: 0 !important;
@@ -971,6 +971,12 @@ div#to_top {
     width: 20px;
     fill: #fff;
 }
+.style3 .right-con .bodyBg {
+    background: #fff !important;
+}
+.header {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+}
 `);
             setInterval(() => {
                 $$('.course-list .course:not(.p)').forEach(el => {
@@ -1000,7 +1006,7 @@ div#to_top {
                     el.classList.add('p');
                 });
             }, 200);
-            const putMenuItem = (name, url, id, icon) =>$('.menu-list-ul > *:first-child').insertAdjacentHTML('afterEnd', `
+            const putMenuItem = (name, url, id, icon) => $('.menu-list-ul > *:first-child')?.insertAdjacentHTML('afterEnd', `
 <li level="1" parent-id="" table-type="1" parent-type="" data-id="${id}">
     <div role="menuitem" level="1" focus_element="0" tabindex="-1" name="${name}" id="first${id}" onclick="setUrl('${id}','${url}',this,'0','${name}');" imgname="icon-home" dataurl="https://mooc1-api.chaoxing.com/work/stu-work" class="label-item" aria-label="作业菜单项已访问">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon-space iconfont svg-icon-20-fff"><path d="${icon}"></path></svg>
@@ -1010,25 +1016,15 @@ div#to_top {
 </li>
             `);
             putMenuItem('考试', 'https://mooc1-api.chaoxing.com/exam-ans/exam/phone/examcode', 22345, 'M4 2V8H2V2H4M2 22V16H4V22H2M5 12C5 13.11 4.11 14 3 14C1.9 14 1 13.11 1 12C1 10.9 1.9 10 3 10C4.11 10 5 10.9 5 12M16 4C20.42 4 24 7.58 24 12C24 16.42 20.42 20 16 20C12.4 20 9.36 17.62 8.35 14.35L6 12L8.35 9.65C9.36 6.38 12.4 4 16 4M15 13L19.53 15.79L20.33 14.5L16.5 12.2V7H15V13Z');
-            putMenuItem('作业', 'https://mooc1-api.chaoxing.com/work/stu-work', 12345, 'M3,7V5H5V4C5,2.89 5.9,2 7,2H13V9L15.5,7.5L18,9V2H19C20.05,2 21,2.95 21,4V20C21,21.05 20.05,22 19,22H7C5.95,22 5,21.05 5,20V19H3V17H5V13H3V11H5V7H3M7,11H5V13H7V11M7,7V5H5V7H7M7,19V17H5V19H7Z');
+            putMenuItem('作业', 'https://mooc1-api.chaoxing.com/mooc-ans/mooc2/work/all-task', 12345, 'M3,7V5H5V4C5,2.89 5.9,2 7,2H13V9L15.5,7.5L18,9V2H19C20.05,2 21,2.95 21,4V20C21,21.05 20.05,22 19,22H7C5.95,22 5,21.05 5,20V19H3V17H5V13H3V11H5V7H3M7,11H5V13H7V11M7,7V5H5V7H7M7,19V17H5V19H7Z');
         }
     }
-    if (location.href.startsWith(`https://mooc1-api.chaoxing.com/work/stu-work`)) {
-        const toPcWorkUrl = raw => {
-            const q = new URL(raw, location.origin).searchParams;
-            const g = k => q.get(k) || q.get(k.toLowerCase()) || '';
-            return `https://mooc1.chaoxing.com/visit/stucoursemiddle?ismooc2=1&courseid=${g('courseId')}&clazzid=${g('clazzId')}&pageHeader=8`;
-        };
-        setInterval(() => {
-            $$('.nav > li[data]:not(li.p)').forEach( el => {
-                el.addEventListener('click', () => GM_openInTab(toPcWorkUrl(el.getAttribute('data')), { active: true }));
-                el.classList.add('p');
-            });
-        }, 200);
+    if (location.href.startsWith(`https://mooc1-api.chaoxing.com/mooc-ans/mooc2/work/all-task`) || location.href.startsWith(`https://mooc2-ans.chaoxing.com/visit/interaction`)) {
         putStyles(`
-* { font-size: 16px !important; }
-.seacherDiv { display: none; }
-.nav > li { cursor: pointer; }
+            .stuStatus { margin-left: 10px !important; margin-right: 6px !important; }
+            .content { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16) !important; }
+            body, #divbox.box { background: transparent !important; }
+            .box { padding-top: 20px; }
         `);
     }
     if (location.href.startsWith(`https://mooc1-api.chaoxing.com/exam-ans/exam/phone/examcode`)) {
@@ -1039,9 +1035,9 @@ div#to_top {
         };
         setInterval(() => {
             $$('.ks_list > li[data]:not(li.p)').forEach(el => {
-                el.innerHTML += '&nbsp;';
-                el.addEventListener('click', () => GM_openInTab(toExamUrl(el.getAttribute('data')), { active: true }));
                 el.classList.add('p');
+                el.setAttribute('onclick', '');
+                el.addEventListener('click', () => GM_openInTab(toExamUrl(el.getAttribute('data')), { active: true }));
             });
         }, 200);
         putStyles(`

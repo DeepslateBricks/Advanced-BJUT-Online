@@ -4,7 +4,7 @@
    <br />
 
 </div>
-<p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(32em, 100%)" /></p>
+<p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(48em, 100%)" /></p>
 <div align="center">
 </div>
 
@@ -36,6 +36,10 @@
 
 4. ***WebVPN*** - **首页**
    - **保持会话活跃**：<u>点击左下角的“保持会话活跃”按钮</u> 可以避免长时间无操作导致自动退出登录。点击按钮后请不要关闭这个页面。
+
+5. ***学习通*** - **个人主页**
+   - **查看作业 / 考试**：点击侧栏“作业”、“考试”入口可以查看自己的全部作业、考试；
+   - **课程列表优化**：优化课程列表的样式，并添加快捷进入课程作业、章节等模块的按钮。
 
 ### 声明
 

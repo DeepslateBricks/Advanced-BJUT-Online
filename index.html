@@ -39,7 +39,16 @@
          <b>更好的北京工业大学教务 / 门户使用体验</b>
          <br />
       </div>
-      <p align="center"><img src="assets/main_function.svg" alt="Main Function" style="max-width: min(48em, 100%)" />
+      <p align="center">
+         <img src="assets/main_function.svg" alt="Main Function" style="max-width: min(64em, 100%)" id="main-function"/>
+         <script>
+            const img = document.querySelector('#main-function');
+            img.addEventListener('click', () => {
+               img.addEventListener('click', () => {
+                   window.open(img.src, '_blank');
+               });
+            });
+         </script>
       </p>
       <div align="center">
       </div>
@@ -47,7 +56,7 @@
       <p>若您已经安装了 Tampermonkey（油猴 / 篡改猴）插件，请点击该 <a
             href="https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js"><strong>链接</strong></a>
          添加此脚本。</p>
-      <p>若您还未安装上述插件，请使用该提示词询问 AI 如何安装：</p>
+      <p>若您还未安装上述插件，请使用该提示词询问 AI 如何安装（点击即可复制）</p>
       <pre class="click-to-copy"><code>请告诉我如何在我的浏览器上安装 Tampermonkey 插件。我的浏览器是 [浏览器名称]、系统为 [系统名称]。
 在安装 Tampermonkey 完成后，我希望添加脚本 Advanced BJUT Online，URL 为：https://cdn.jsdelivr.net/gh/DeepslateBricks/Advanced-BJUT-Online/advanced-bjut-online.js
 </code></pre>
@@ -85,16 +94,12 @@
             </ul>
          </li>
          <li>
-            <!-- // 9. 学习通主页优化
-//      - 美化主页样式
-//      - 在侧栏添加查看作业 / 考试功能
-//      - 优化课程列表样式，添加快捷进入作业、章节等模块的按钮
-//    Tip: 此功能可在右上角菜单开启或禁用-->
             <p><em><strong>学习通</strong></em> - <strong>主页优化</strong></p>
             <ul>
                <li><strong>查看作业 / 考试</strong>：点击侧栏“作业”、“考试”入口可以查看自己的全部作业、考试；</li>
                <li><strong>课程列表优化</strong>：优化课程列表的样式，并添加快捷进入课程作业、章节等模块的按钮。</li>
             </ul>
+            <p>您可以通过右上角的菜单选择开启 / 关闭此功能。这一功能属于实验性功能，默认在域名 <a href="https://i.chaoxing.com/base" target="_blank">i.chaoxing.com</a> 生效。</p>
          </li>
       </ol>
       <h3>声明</h3>
